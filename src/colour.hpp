@@ -1,14 +1,14 @@
-#ifndef COLOUR_H
-#define COLOUR_H
+#ifndef COLOUR_HPP
+#define COLOUR_HPP
 
 #include "vec3.hpp"
 
 #include <iostream>
 
 // note that we are using vec3 for both coloUrs and geometry
-using colour = vec3;
+using Colour = Vec3;
 
-void writeColour(std::ostream &out, const colour &pixelColour) {
+void writeColour(std::ostream &out, const Colour &pixelColour) {
   auto r = pixelColour.x();
   auto g = pixelColour.y();
   auto b = pixelColour.z();
