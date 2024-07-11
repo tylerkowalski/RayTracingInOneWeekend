@@ -7,14 +7,15 @@
 double hitSphere(const Point3 &centre, double radius, const Ray &r) {
   // solving the quadratic equation if the ray intersects the sphere
   Vec3 oc = centre - r.origin();
-  auto a = dot(r.direction(), r.direction());
-  auto b = -2.0 * dot(r.direction(), oc);
-  auto c = dot(oc, oc) - radius * radius;
-  auto discriminant = b * b - 4 * a * c;
+  auto a = r.direction().lengthSquared();
+  auto h = dot(r.direction(), oc);
+  auto c = oc.lengthSquared() - radius * radius;
+  auto discriminant = h * h - a * c;
+
   if (discriminant < 0) {
     return -1.0;
   } else {
-    return (-b - sqrt(discriminant) / (2.0 * a));
+    return (h - sqrt(discriminant)) / a;
   }
 }
 
