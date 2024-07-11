@@ -6,7 +6,7 @@
 
 Colour rayColour(const Ray &r, const Hittable &world) {
   HitRecord rec;
-  if (world.hit(r, 0, infinity, rec)) {
+  if (world.hit(r, Interval(0, infinity), rec)) {
     return 0.5 * (rec.normal + Colour(1, 1, 1));
   }
 

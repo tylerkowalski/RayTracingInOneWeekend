@@ -16,14 +16,13 @@ public:
 
   void add(shared_ptr<Hittable> object) { objects.push_back(object); }
 
-  bool hit(const Ray &r, double rayTMin, double rayTMax,
-           HitRecord &rec) const override {
+  bool hit(const Ray &r, Interval rayT, HitRecord &rec) const override {
     HitRecord tmpRec;
     bool hitAnything = false;
-    auto closestSoFar = rayTMax;
+    auto closestSoFar = rayT.max;
 
     for (const auto &object : objects) {
-      if (object->hit(r, rayTMin, closestSoFar, tmpRec)) {
+      if (object->hit(r, Interval(rayT.min, closestSoFar), tmpRec)) {
         hitAnything = true;
         closestSoFar = tmpRec.t;
         rec = tmpRec;

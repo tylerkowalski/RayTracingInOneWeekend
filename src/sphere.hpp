@@ -12,8 +12,7 @@ public:
   Sphere(const Point3 &centre, double radius)
       : centre{centre}, radius{radius} {}
 
-  bool hit(const Ray &r, double rayTMin, double rayTMax,
-           HitRecord &rec) const override {
+  bool hit(const Ray &r, Interval rayT, HitRecord &rec) const override {
     Vec3 oc = centre - r.origin();
     auto a = r.direction().lengthSquared();
     auto h = dot(r.direction(), oc);
@@ -28,9 +27,9 @@ public:
 
     // find the closest root that is within bounds
     auto root = (h - sqrtd) / a;
-    if (root <= rayTMin || rayTMax <= root) {
+    if (!rayT.surrounds(root)) {
       root = (h + sqrtd) / a;
-      if (root <= rayTMin || rayTMax <= root) {
+      if (!rayT.surrounds(root)) {
         return false;
       }
     }
