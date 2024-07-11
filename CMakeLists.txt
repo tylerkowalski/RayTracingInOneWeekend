@@ -23,13 +23,13 @@ set ( SOURCE_ONE_WEEKEND
   src/main.cpp
 #  src/InOneWeekend/camera.h
   src/colour.hpp
-#  src/InOneWeekend/hittable.h
-#  src/InOneWeekend/hittable_list.h
+  src/hittable.hpp
+  src/hittableList.hpp
 #  src/InOneWeekend/interval.h
 #  src/InOneWeekend/material.h
   src/ray.hpp
 #  src/InOneWeekend/rtweekend.h
-#  src/InOneWeekend/sphere.h
+  src/sphere.hpp
   src/vec3.hpp
 )
 

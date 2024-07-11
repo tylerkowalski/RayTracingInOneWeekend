@@ -1,11 +1,7 @@
 #ifndef VEC3_HPP
 #define VEC3_HPP
 
-#include <cmath>
-#include <iostream>
 #include <ostream>
-
-using std::sqrt;
 
 class Vec3 {
 public:

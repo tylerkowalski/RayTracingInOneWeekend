@@ -1,33 +1,13 @@
-#include <iostream>
+#include "rtweekend.hpp"
 
-#include "colour.hpp"
-#include "ray.hpp"
-#include "vec3.hpp"
+#include "hittable.hpp"
+#include "hittableList.hpp"
+#include "sphere.hpp"
 
-double hitSphere(const Point3 &centre, double radius, const Ray &r) {
-  // solving the quadratic equation if the ray intersects the sphere
-  Vec3 oc = centre - r.origin();
-  auto a = r.direction().lengthSquared();
-  auto h = dot(r.direction(), oc);
-  auto c = oc.lengthSquared() - radius * radius;
-  auto discriminant = h * h - a * c;
-
-  if (discriminant < 0) {
-    return -1.0;
-  } else {
-    return (h - sqrt(discriminant)) / a;
-  }
-}
-
-Colour rayColour(const Ray &r) {
-  auto t = hitSphere(Point3(0, 0, -1), 0.5, r);
-  if (t > 0.0) { // we don't worry about negative t yet because our sphere is
-                 // infront of us
-    Vec3 normal = unitVector(
-        r.at(t) -
-        Vec3(0, 0,
-             -1)); // think of it like translating the vector to a new origin
-    return 0.5 * Colour(normal.x() + 1, normal.y() + 1, normal.z() + 1);
+Colour rayColour(const Ray &r, const Hittable &world) {
+  HitRecord rec;
+  if (world.hit(r, 0, infinity, rec)) {
+    return 0.5 * (rec.normal + Colour(1, 1, 1));
   }
 
   Vec3 unitDirection = unitVector(r.direction());
@@ -45,6 +25,12 @@ int main() {
   // calculate the image height with min val = 1
   int IMAGE_HEIGHT = int(IMAGE_WIDTH / ASPECT_RATIO);
   IMAGE_HEIGHT = (IMAGE_HEIGHT < 1) ? 1 : IMAGE_HEIGHT;
+
+  // world
+  HittableList world;
+
+  world.add(make_shared<Sphere>(Point3(0, 0, -1), 0.5));
+  world.add(make_shared<Sphere>(Point3(0, -100.5, -1), 100));
 
   // camera
   auto FOCAL_LENGTH = 1.0;
@@ -79,7 +65,7 @@ int main() {
       auto rayDirection = pixelCentre - CAMERA_CENTRE;
       Ray r(CAMERA_CENTRE, rayDirection);
 
-      Colour pixelColour = rayColour(r);
+      Colour pixelColour = rayColour(r, world);
       writeColour(std::cout, pixelColour);
     }
   }

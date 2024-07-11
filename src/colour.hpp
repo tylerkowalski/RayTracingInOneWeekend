@@ -3,8 +3,6 @@
 
 #include "vec3.hpp"
 
-#include <iostream>
-
 // note that we are using vec3 for both coloUrs and geometry
 using Colour = Vec3;
 
