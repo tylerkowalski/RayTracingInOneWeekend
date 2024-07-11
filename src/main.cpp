@@ -4,19 +4,29 @@
 #include "ray.hpp"
 #include "vec3.hpp"
 
-bool hitSphere(const Point3 &centre, double radius, const Ray &r) {
+double hitSphere(const Point3 &centre, double radius, const Ray &r) {
   // solving the quadratic equation if the ray intersects the sphere
   Vec3 oc = centre - r.origin();
   auto a = dot(r.direction(), r.direction());
   auto b = -2.0 * dot(r.direction(), oc);
   auto c = dot(oc, oc) - radius * radius;
   auto discriminant = b * b - 4 * a * c;
-  return discriminant >= 0;
+  if (discriminant < 0) {
+    return -1.0;
+  } else {
+    return (-b - sqrt(discriminant) / (2.0 * a));
+  }
 }
 
 Colour rayColour(const Ray &r) {
-  if (hitSphere(Point3(0, 0, -1), 0.5, r)) {
-    return Colour(1, 0, 0);
+  auto t = hitSphere(Point3(0, 0, -1), 0.5, r);
+  if (t > 0.0) { // we don't worry about negative t yet because our sphere is
+                 // infront of us
+    Vec3 normal = unitVector(
+        r.at(t) -
+        Vec3(0, 0,
+             -1)); // think of it like translating the vector to a new origin
+    return 0.5 * Colour(normal.x() + 1, normal.y() + 1, normal.z() + 1);
   }
 
   Vec3 unitDirection = unitVector(r.direction());
