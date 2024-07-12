@@ -1,6 +1,7 @@
 #ifndef COLOUR_HPP
 #define COLOUR_HPP
 
+#include "interval.hpp"
 #include "vec3.hpp"
 
 // note that we are using vec3 for both coloUrs and geometry
@@ -12,9 +13,10 @@ void writeColour(std::ostream &out, const Colour &pixelColour) {
   auto b = pixelColour.z();
 
   // translate values from [0,1] -> [0,255]
-  int rbyte = int(255.999 * r);
-  int gbyte = int(255.999 * g);
-  int bbyte = int(255.999 * b);
+  static const Interval intensity(0.000, 0.999);
+  int rbyte = int(255.999 * intensity.clamp(r));
+  int gbyte = int(255.999 * intensity.clamp(g));
+  int bbyte = int(255.999 * intensity.clamp(b));
 
   // write out the components as defined in PPM format
   out << rbyte << ' ' << gbyte << ' ' << bbyte << '\n';

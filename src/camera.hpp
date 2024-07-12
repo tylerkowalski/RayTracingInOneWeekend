@@ -9,8 +9,9 @@ class Camera {
 public:
   // rather than using a constructor or setters, these 2 fields are public and
   // define how intialize() will set the other variables
-  double ASPECT_RATIO = 1.0; // default image width / image height
-  int IMAGE_WIDTH = 100;     // default value for image width
+  double ASPECT_RATIO = 1.0;  // default image width / image height
+  int IMAGE_WIDTH = 100;      // default value for image width
+  int SAMPLES_PER_PIXEL = 10; // number of RANDOM samples per pixel
 
   void render(const Hittable &world) {
     initialize();
@@ -21,13 +22,12 @@ public:
       std::clog << "\rScanlines remaining: " << (IMAGE_HEIGHT - m) << ' '
                 << std::flush;
       for (int n = 0; n < IMAGE_WIDTH; ++n) {
-        auto pixelCentre =
-            PIXEL00_LOC + (n * PIXEL_DELTA_U) + (m * PIXEL_DELTA_V);
-        auto rayDirection = pixelCentre - CAMERA_CENTRE;
-        Ray r(CAMERA_CENTRE, rayDirection);
-
-        Colour pixelColour = rayColour(r, world);
-        writeColour(std::cout, pixelColour);
+        Colour pixelColour(0, 0, 0);
+        for (int sample = 0; sample < SAMPLES_PER_PIXEL; ++sample) {
+          Ray r = getRay(m, n);
+          pixelColour += rayColour(r, world);
+        }
+        writeColour(std::cout, PIXEL_SAMPLES_SCALE * pixelColour);
       }
     }
     std::clog << "\rDone.                 \n";
@@ -35,16 +35,19 @@ public:
 
 private:
   // these private fields are defined based on initialize()
-  int IMAGE_HEIGHT;     // rendered image height
-  Point3 CAMERA_CENTRE; // camera centre
-  Point3 PIXEL00_LOC;   // location of pixel 0,0
-  Vec3 PIXEL_DELTA_U;   // vector to pixel to the right
-  Vec3 PIXEL_DELTA_V;   // vector to pixel below
+  int IMAGE_HEIGHT;           // rendered image height
+  double PIXEL_SAMPLES_SCALE; // colour scale factor for sum of pixel samples
+  Point3 CAMERA_CENTRE;       // camera centre
+  Point3 PIXEL00_LOC;         // location of pixel 0,0
+  Vec3 PIXEL_DELTA_U;         // vector to pixel to the right
+  Vec3 PIXEL_DELTA_V;         // vector to pixel below
 
   void initialize() {
     // calculate the image height with min val = 1
     IMAGE_HEIGHT = int(IMAGE_WIDTH / ASPECT_RATIO);
     IMAGE_HEIGHT = (IMAGE_HEIGHT < 1) ? 1 : IMAGE_HEIGHT;
+
+    PIXEL_SAMPLES_SCALE = 1.0 / SAMPLES_PER_PIXEL;
 
     CAMERA_CENTRE = Point3(0, 0, 0);
 
@@ -68,6 +71,24 @@ private:
                                (VIEWPORT_U / 2) - (VIEWPORT_V / 2);
     PIXEL00_LOC =
         VIEWPORT_UPPER_LEFT + (PIXEL_DELTA_U / 2) + (PIXEL_DELTA_V / 2);
+  }
+
+  Ray getRay(int m, int n) const {
+    // make a ray from origin to a random sample in the region of pixel (i,j)
+    auto offset = sampleSquare();
+    auto pixelSample = PIXEL00_LOC + (n + offset.x()) * PIXEL_DELTA_U +
+                       (m + offset.y()) * PIXEL_DELTA_V;
+
+    auto rayOrigin = CAMERA_CENTRE;
+    auto rayDirection = pixelSample - rayOrigin;
+
+    return Ray(rayOrigin, rayDirection);
+  }
+
+  Vec3 sampleSquare() const {
+    // returns a vector to a random point in the unit square with the centre at
+    // the origin
+    return Vec3(randomDouble() - 0.5, randomDouble() - 0.5, 0);
   }
 
   Colour rayColour(const Ray &r, const Hittable &world) const {
