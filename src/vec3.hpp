@@ -39,6 +39,15 @@ public:
   }
 
   double length() const { return sqrt(lengthSquared()); }
+
+  static Vec3 random() {
+    return Vec3(randomDouble(), randomDouble(), randomDouble());
+  }
+
+  static Vec3 random(double min, double max) {
+    return Vec3(randomDouble(min, max), randomDouble(min, max),
+                randomDouble(min, max));
+  }
 };
 
 // probably not the best for type-safety, but we will use it for geometric
@@ -81,5 +90,26 @@ inline Vec3 cross(const Vec3 &u, const Vec3 &v) {
 }
 
 inline Vec3 unitVector(const Vec3 &v) { return v / v.length(); }
+
+inline Vec3 randomInUnitSphere() {
+  while (true) {
+    auto p = Vec3::random(-1, 1); // sample a random point in the unit cube
+    if (p.lengthSquared() <
+        1) // it is IN the unit sphere but NOT necessarily on it
+      return p;
+  }
+}
+
+// note that any random unit vector is on the unit sphere
+inline Vec3 randomUnitVector() { return unitVector(randomInUnitSphere()); }
+
+inline Vec3 randomOnHemisphere(const Vec3 &normal) {
+  Vec3 onUnitSphere = randomUnitVector();
+  if (dot(onUnitSphere, normal) > 0) {
+    return onUnitSphere;
+  } else {
+    return -onUnitSphere;
+  }
+}
 
 #endif

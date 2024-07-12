@@ -94,7 +94,10 @@ private:
   Colour rayColour(const Ray &r, const Hittable &world) const {
     HitRecord rec;
     if (world.hit(r, Interval(0, infinity), rec)) {
-      return 0.5 * (rec.normal + Colour(1, 1, 1));
+      Vec3 direction = randomOnHemisphere(rec.normal);
+      return 0.5 *
+             rayColour(Ray(rec.p, direction),
+                       world); // the colour is 50% of the colour from the bound
     }
 
     Vec3 unitDirection = unitVector(r.direction());
