@@ -116,8 +116,9 @@ private:
       // to points sampled near the origin. Easier to reason about in 2D
 
       return 0.5 *
-             rayColour(Ray(rec.p, direction), depth - 1,
-                       world); // the colour is 50% of the colour from the bound
+             rayColour(
+                 Ray(rec.p, direction), depth - 1,
+                 world); // the colour is 50% of the colour from the bounce
     }
 
     Vec3 unitDirection = unitVector(r.direction());
