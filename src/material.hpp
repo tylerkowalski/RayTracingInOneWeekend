@@ -52,19 +52,28 @@ private:
 
 class Metal : public Material {
 public:
-  Metal(const Colour &albedo) : albedo{albedo} {}
+  Metal(const Colour &albedo, double fuzz)
+      : albedo{albedo}, fuzz{fuzz < 1 ? fuzz : 1} {}
 
   bool scatter(const Ray &rIn, const HitRecord &rec, Colour &attenuation,
                Ray &scattered) const override {
 
     Vec3 reflected = reflect(rIn.direction(), rec.normal);
+    reflected =
+        unitVector(reflected) + (fuzz * randomUnitVector()); // fuzzing things
+    // reflected ray has to first be normalized so that it is consistently
+    // scaled WRT. fuzz sphere (otherwise fuzz factor is meaningless)
+
     scattered = Ray(rec.p, reflected);
     attenuation = albedo;
-    return true;
+    return dot(scattered.direction(), rec.normal) >
+           0; // if our fuzzing causes the scatter to be towards the surface, we
+              // absorb the ray
   }
 
 private:
   Colour albedo;
+  double fuzz; // the scaling factor of the fuzz unit sphere radius
 };
 
 #endif
