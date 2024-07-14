@@ -99,7 +99,7 @@ private:
     }
 
     HitRecord rec;
-    if (world.hit(r, Interval(0, infinity), rec)) {
+    if (world.hit(r, Interval(0.001, infinity), rec)) {
       Vec3 direction = randomOnHemisphere(rec.normal);
       return 0.5 *
              rayColour(Ray(rec.p, direction), depth - 1,
