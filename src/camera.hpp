@@ -12,6 +12,7 @@ public:
   double ASPECT_RATIO = 1.0;  // default image width / image height
   int IMAGE_WIDTH = 100;      // default value for image width
   int SAMPLES_PER_PIXEL = 10; // number of RANDOM samples per pixel
+  int MAX_DEPTH = 10;         // maximum number of ray bounces we will allow
 
   void render(const Hittable &world) {
     initialize();
@@ -25,7 +26,7 @@ public:
         Colour pixelColour(0, 0, 0);
         for (int sample = 0; sample < SAMPLES_PER_PIXEL; ++sample) {
           Ray r = getRay(m, n);
-          pixelColour += rayColour(r, world);
+          pixelColour += rayColour(r, MAX_DEPTH, world);
         }
         writeColour(std::cout, PIXEL_SAMPLES_SCALE * pixelColour);
       }
@@ -91,12 +92,17 @@ private:
     return Vec3(randomDouble() - 0.5, randomDouble() - 0.5, 0);
   }
 
-  Colour rayColour(const Ray &r, const Hittable &world) const {
+  Colour rayColour(const Ray &r, int depth, const Hittable &world) const {
+    // if we hit the max depth, no more light will be gathered
+    if (depth <= 0) {
+      return Colour(0, 0, 0);
+    }
+
     HitRecord rec;
     if (world.hit(r, Interval(0, infinity), rec)) {
       Vec3 direction = randomOnHemisphere(rec.normal);
       return 0.5 *
-             rayColour(Ray(rec.p, direction),
+             rayColour(Ray(rec.p, direction), depth - 1,
                        world); // the colour is 50% of the colour from the bound
     }
 
