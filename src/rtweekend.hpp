@@ -9,6 +9,7 @@
 
 // C++ Std Usings
 
+using std::fabs;
 using std::make_shared;
 using std::shared_ptr;
 using std::sqrt;
@@ -20,9 +21,7 @@ const double pi = 3.1415926535897932385;
 
 // Utility Functions
 
-inline double degreesToRadians(double degrees) {
-  return degrees * pi / 180.0;
-}
+inline double degreesToRadians(double degrees) { return degrees * pi / 180.0; }
 
 inline double randomDouble() {
   static std::uniform_real_distribution<double> distribution(0.0, 1.0);
@@ -31,7 +30,7 @@ inline double randomDouble() {
 }
 
 inline double randomDouble(double min, double max) {
-  return (max-min) * randomDouble() + min;
+  return (max - min) * randomDouble() + min;
 }
 
 // Common Headers

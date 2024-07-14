@@ -2,15 +2,17 @@
 #define SPHERE_HPP
 
 #include "hittable.hpp"
+#include "material.hpp"
 
 class Sphere : public Hittable {
 private:
   Point3 centre;
   double radius;
+  shared_ptr<Material> mat;
 
 public:
-  Sphere(const Point3 &centre, double radius)
-      : centre{centre}, radius{radius} {}
+  Sphere(const Point3 &centre, double radius, shared_ptr<Material> mat)
+      : centre{centre}, radius{radius}, mat{mat} {}
 
   bool hit(const Ray &r, Interval rayT, HitRecord &rec) const override {
     Vec3 oc = centre - r.origin();
@@ -38,6 +40,7 @@ public:
     rec.p = r.at(rec.t);
     Vec3 outwardNormal = (rec.p - centre) / radius;
     rec.setFaceNormal(r, outwardNormal);
+    rec.mat = mat;
     return true;
   }
 };

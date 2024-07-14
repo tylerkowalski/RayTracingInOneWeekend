@@ -1,10 +1,14 @@
 #ifndef HITTABLE_HPP
 #define HITTABLE_HPP
 
+class Material;
+
 class HitRecord {
 public:
   Point3 p;
   Vec3 normal;
+  shared_ptr<Material> mat; // call member functions of this to determine
+                            // scattered ray + properties
   double t;
   bool frontFace;
 

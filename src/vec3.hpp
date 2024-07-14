@@ -38,6 +38,11 @@ public:
     return e[0] * e[0] + e[1] * e[1] + e[2] * e[2];
   }
 
+  bool nearZero() const {
+    auto s = 1e-8;
+    return (fabs(e[0] < s)) && (fabs(e[1] < s)) && (fabs(e[2]) < s);
+  }
+
   double length() const { return sqrt(lengthSquared()); }
 
   static Vec3 random() {
@@ -110,6 +115,12 @@ inline Vec3 randomOnHemisphere(const Vec3 &normal) {
   } else {
     return -onUnitSphere;
   }
+}
+
+inline Vec3 reflect(const Vec3 &v, const Vec3 &n) {
+  // note, v+2b is the reflected ray, where b is -proj_n(v)
+  // b = -proj_n(v) = [dot(v,n)/dot(n,n)]n, and n is a unit vector
+  return v - 2 * dot(v, n) * n;
 }
 
 #endif

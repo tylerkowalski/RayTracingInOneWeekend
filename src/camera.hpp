@@ -4,6 +4,7 @@
 #include "rtweekend.hpp"
 
 #include "hittable.hpp"
+#include "material.hpp"
 
 class Camera {
 public:
@@ -100,25 +101,13 @@ private:
 
     HitRecord rec;
     if (world.hit(r, Interval(0.001, infinity), rec)) {
-      Vec3 direction =
-          rec.normal + randomOnHemisphere(rec.normal); // lambertian reflection
-      // if you sample randomly from the unit sphere which lies tagent to the
-      // point of intersection, in the direction of the incoming ray's origin,
-      // the corresponding ray direction from the point of intersection to the
-      // sampled point follows a distribution proportional to cos(theta); theta
-      // is angle between the norm and the incoming ray. This is because you are
-      // projecting sampled points from a unit sphere to a hemisphere, and more
-      // points near the normal correspond to a projection from a point sampled
-      // off the unit sphere. Equidistant points on the sphere, further from the
-      // normal, will correspond to further points on the projection onto the
-      // hemisphere. Slight changes of point samples far from the norm on the
-      // unit sphere correspond to larger changes in the hemisphere, as opposed
-      // to points sampled near the origin. Easier to reason about in 2D
-
-      return 0.5 *
-             rayColour(
-                 Ray(rec.p, direction), depth - 1,
-                 world); // the colour is 50% of the colour from the bounce
+      Ray scattered;
+      Colour attenuation;
+      if (rec.mat->scatter(r, rec, attenuation, scattered))
+        return attenuation * rayColour(scattered, depth - 1, world);
+      else {
+        return Colour(0, 0, 0); // otherwise the ray is completely absorbed
+      }
     }
 
     Vec3 unitDirection = unitVector(r.direction());
