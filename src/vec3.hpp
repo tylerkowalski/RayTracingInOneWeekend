@@ -123,4 +123,19 @@ inline Vec3 reflect(const Vec3 &v, const Vec3 &n) {
   return v - 2 * dot(v, n) * n;
 }
 
+inline Vec3 refract(const Vec3 &uv, const Vec3 &n, double etaiOverEtat) {
+  auto cosTheta = fmin(
+      dot(-uv, n), 1.0); // derived from the fact that uv, n are unit
+                         // vectors and dot(a,b)=|a||b|cos(theta), i.e |a||b|=1
+  Vec3 rOutPerp =
+      etaiOverEtat *
+      (uv + cosTheta * n); // etai is incoming eta (index of refraction)
+  Vec3 rOutParallel = -sqrt(fabs(1.0 - rOutPerp.lengthSquared())) * n;
+  // R_perp = etai/etat (R+cos(theta)N)
+  // R_para = -sqrt(1-|R_perp|^2)N
+  // the above come from Snell's law
+
+  return rOutPerp + rOutParallel;
+}
+
 #endif

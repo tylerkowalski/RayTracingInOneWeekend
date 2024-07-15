@@ -76,4 +76,30 @@ private:
   double fuzz; // the scaling factor of the fuzz unit sphere radius
 };
 
+class Dialectric : public Material {
+public:
+  Dialectric(double refractionIndex) : refractionIndex{refractionIndex} {}
+
+  // always refracts
+  bool scatter(const Ray &rIn, const HitRecord &rec, Colour &attenuation,
+               Ray &scattered) const override {
+    attenuation = Colour(1.0, 1.0, 1.0);
+    double ri =
+        rec.frontFace
+            ? (1.0 / refractionIndex)
+            : refractionIndex; // numerator in refractionIndex ratio needs to be
+                               // refractive index of incoming material
+
+    Vec3 unitDirection = unitVector(rIn.direction());
+    Vec3 refracted = refract(unitDirection, rec.normal, ri);
+
+    scattered = Ray(rec.p, refracted);
+    return true;
+  }
+
+private:
+  double
+      refractionIndex; // ratio of material's index / index of enclosing media
+};
+
 #endif
