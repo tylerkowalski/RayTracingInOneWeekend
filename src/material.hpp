@@ -91,9 +91,23 @@ public:
                                // refractive index of incoming material
 
     Vec3 unitDirection = unitVector(rIn.direction());
-    Vec3 refracted = refract(unitDirection, rec.normal, ri);
+    double cosTheta =
+        fmin(dot(-unitDirection, rec.normal),
+             1.0); // cos(theta) between 2 unit vector are their dot product
+    double sinTheta =
+        sqrt(1.0 - cosTheta * cosTheta); // follows from pythagorean identity
 
-    scattered = Ray(rec.p, refracted);
+    bool cannotRefract =
+        ri * sinTheta > 1.0; // if there is no solution to Snell's law
+    Vec3 direction;
+
+    if (cannotRefract)
+      direction = reflect(unitDirection, rec.normal);
+    else
+      direction = refract(unitDirection, rec.normal, ri);
+
+    scattered = Ray(rec.p, direction);
+
     return true;
   }
 

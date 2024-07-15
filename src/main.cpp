@@ -11,7 +11,7 @@ int main() {
   HittableList world;
 
   auto material_ground = make_shared<Lambertian>(Colour(0.8, 0.8, 0.0));
-  auto material_center = make_shared<Dialectric>(1.50);
+  auto material_center = make_shared<Dialectric>(1.00 / 1.33); // air bubble
   auto material_left = make_shared<Metal>(Colour(0.5, 0.5, 0.5), 0.1);
   auto material_right = make_shared<Metal>(Colour(0.1, 0.1, 0.1), 1.0);
 
