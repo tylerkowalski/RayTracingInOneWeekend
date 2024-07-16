@@ -15,6 +15,8 @@ public:
   int SAMPLES_PER_PIXEL = 10; // number of RANDOM samples per pixel
   int MAX_DEPTH = 10;         // maximum number of ray bounces we will allow
 
+  double VFOV = 90; // vertical FOV
+
   void render(const Hittable &world) {
     initialize();
 
@@ -55,7 +57,11 @@ private:
 
     // determine viewport dimensions
     auto FOCAL_LENGTH = 1.0;
-    auto VIEWPORT_HEIGHT = 2.0; // arbitrary
+    auto theta = degreesToRadians(VFOV);
+    auto h = tan(theta / 2); // since we use the z=-1 plane
+    auto VIEWPORT_HEIGHT =
+        2 * h * FOCAL_LENGTH; // by similar triangle, distY is scaled the same
+                              // as dist-Z (the scale factor is FOCAL_LENGTH)
     auto VIEWPORT_WIDTH =
         VIEWPORT_HEIGHT * (double(IMAGE_WIDTH) / IMAGE_HEIGHT);
 
