@@ -101,7 +101,7 @@ public:
         ri * sinTheta > 1.0; // if there is no solution to Snell's law
     Vec3 direction;
 
-    if (cannotRefract)
+    if (cannotRefract || reflectance(cosTheta, ri) > randomDouble())
       direction = reflect(unitDirection, rec.normal);
     else
       direction = refract(unitDirection, rec.normal, ri);
@@ -114,6 +114,14 @@ public:
 private:
   double
       refractionIndex; // ratio of material's index / index of enclosing media
+
+  // reflectance varies with angle
+  static double reflectance(double cosine, double refractionIndex) {
+    // use the Schlick Approximation
+    auto r0 = (1 - refractionIndex) / (1 + refractionIndex);
+    r0 = r0 * r0;
+    return r0 + (1 - r0) * pow((1 - cosine), 5);
+  }
 };
 
 #endif
