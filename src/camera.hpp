@@ -15,7 +15,10 @@ public:
   int SAMPLES_PER_PIXEL = 10; // number of RANDOM samples per pixel
   int MAX_DEPTH = 10;         // maximum number of ray bounces we will allow
 
-  double VFOV = 90; // vertical FOV
+  double VFOV = 90;                  // vertical FOV
+  Point3 lookfrom = Point3(0, 0, 0); // camera centre
+  Point3 lookat = Point3(0, 0, -1);  // point the camera is looking at
+  Vec3 vup = Vec3(0, 1, 0);          // camera-relative "up" direction
 
   void render(const Hittable &world) {
     initialize();
@@ -45,6 +48,8 @@ private:
   Point3 PIXEL00_LOC;         // location of pixel 0,0
   Vec3 PIXEL_DELTA_U;         // vector to pixel to the right
   Vec3 PIXEL_DELTA_V;         // vector to pixel below
+  Vec3 u, v, w; // camera frame orthonormal basis vectors. u(right), v(up),
+                // w(opposite view direction)
 
   void initialize() {
     // calculate the image height with min val = 1
@@ -53,10 +58,10 @@ private:
 
     PIXEL_SAMPLES_SCALE = 1.0 / SAMPLES_PER_PIXEL;
 
-    CAMERA_CENTRE = Point3(0, 0, 0);
+    CAMERA_CENTRE = lookfrom;
 
     // determine viewport dimensions
-    auto FOCAL_LENGTH = 1.0;
+    auto FOCAL_LENGTH = (lookfrom - lookat).length();
     auto theta = degreesToRadians(VFOV);
     auto h = tan(theta / 2); // since we use the z=-1 plane
     auto VIEWPORT_HEIGHT =
@@ -65,17 +70,30 @@ private:
     auto VIEWPORT_WIDTH =
         VIEWPORT_HEIGHT * (double(IMAGE_WIDTH) / IMAGE_HEIGHT);
 
+    w = unitVector(lookfrom - lookat);
+    u = unitVector(
+        cross(vup, w)); // pick the vec perp to w and vup to be (right) [ this
+                        // is what captures vups notion of "upness"]
+    // what this means is that moving in the u direction does not affect the
+    // position's vup component or w component, making our camera
+    // horizontally-level wrt up vector (i.e moving left and right doesnt cause
+    // moveup in upness WRT vup)
+
+    // u,w define the "forward, sideways" movement, and we want it to be such
+    // that movement in those axis don't add components wrt vup vector
+    // the we define v as needed to have an orthonormal basis for camera
+    v = cross(w, u); // pick up vector to be perp to other vectors
+
     // vectors that define the viewport
-    auto VIEWPORT_U = Vec3(VIEWPORT_WIDTH, 0, 0);
-    auto VIEWPORT_V =
-        Vec3(0, -VIEWPORT_HEIGHT, 0); // we want the v axis to be going "down"
+    auto VIEWPORT_U = VIEWPORT_WIDTH * u;
+    auto VIEWPORT_V = VIEWPORT_HEIGHT * -v; // vector needs to go "down"
 
     // pixel distance vectors
     PIXEL_DELTA_U = VIEWPORT_U / IMAGE_WIDTH;
     PIXEL_DELTA_V = VIEWPORT_V / IMAGE_HEIGHT;
 
     // position of upper-left of the viewport
-    auto VIEWPORT_UPPER_LEFT = CAMERA_CENTRE - Vec3(0, 0, FOCAL_LENGTH) -
+    auto VIEWPORT_UPPER_LEFT = CAMERA_CENTRE - (FOCAL_LENGTH * w) -
                                (VIEWPORT_U / 2) - (VIEWPORT_V / 2);
     PIXEL00_LOC =
         VIEWPORT_UPPER_LEFT + (PIXEL_DELTA_U / 2) + (PIXEL_DELTA_V / 2);

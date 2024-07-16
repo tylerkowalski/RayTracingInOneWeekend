@@ -76,9 +76,9 @@ private:
   double fuzz; // the scaling factor of the fuzz unit sphere radius
 };
 
-class Dialectric : public Material {
+class Dielectric : public Material {
 public:
-  Dialectric(double refractionIndex) : refractionIndex{refractionIndex} {}
+  Dielectric(double refractionIndex) : refractionIndex{refractionIndex} {}
 
   // always refracts
   bool scatter(const Ray &rIn, const HitRecord &rec, Colour &attenuation,
