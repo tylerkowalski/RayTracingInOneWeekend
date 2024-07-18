@@ -20,6 +20,13 @@ public:
   Point3 lookat = Point3(0, 0, -1);  // point the camera is looking at
   Vec3 vup = Vec3(0, 1, 0);          // camera-relative "up" direction
 
+  double defocusAngle =
+      0; // angle of defocus cone with base at CAMERA_CENTRE
+         // and vertex at centre of viewport (better than defining the height of
+         // the cone because amount of defocus is still dependent on the
+         // projection distance)
+  double focusDistance = 10; // distance from LOOKFROM to perfect focus plane
+
   void render(const Hittable &world) {
     initialize();
 
@@ -48,8 +55,10 @@ private:
   Point3 PIXEL00_LOC;         // location of pixel 0,0
   Vec3 PIXEL_DELTA_U;         // vector to pixel to the right
   Vec3 PIXEL_DELTA_V;         // vector to pixel below
-  Vec3 u, v, w; // camera frame orthonormal basis vectors. u(right), v(up),
-                // w(opposite view direction)
+  Vec3 u, v, w;      // camera frame orthonormal basis vectors. u(right), v(up),
+                     // w(opposite view direction)
+  Vec3 defocusDiskU; // horizontal radius of defocus disk
+  Vec3 defocusDiskV; // vertical radius of defocus disk
 
   void initialize() {
     // calculate the image height with min val = 1
@@ -61,12 +70,11 @@ private:
     CAMERA_CENTRE = lookfrom;
 
     // determine viewport dimensions
-    auto FOCAL_LENGTH = (lookfrom - lookat).length();
     auto theta = degreesToRadians(VFOV);
-    auto h = tan(theta / 2); // since we use the z=-1 plane
+    auto h = tan(theta / 2); // since we "pretend" use the z=-1 plane
     auto VIEWPORT_HEIGHT =
-        2 * h * FOCAL_LENGTH; // by similar triangle, distY is scaled the same
-                              // as dist-Z (the scale factor is FOCAL_LENGTH)
+        2 * h * focusDistance; // by similar triangle, distY is scaled the same
+                               // as dist-Z (the scale factor is focusDistance)
     auto VIEWPORT_WIDTH =
         VIEWPORT_HEIGHT * (double(IMAGE_WIDTH) / IMAGE_HEIGHT);
 
@@ -93,19 +101,26 @@ private:
     PIXEL_DELTA_V = VIEWPORT_V / IMAGE_HEIGHT;
 
     // position of upper-left of the viewport
-    auto VIEWPORT_UPPER_LEFT = CAMERA_CENTRE - (FOCAL_LENGTH * w) -
+    auto VIEWPORT_UPPER_LEFT = CAMERA_CENTRE - (focusDistance * w) -
                                (VIEWPORT_U / 2) - (VIEWPORT_V / 2);
     PIXEL00_LOC =
         VIEWPORT_UPPER_LEFT + (PIXEL_DELTA_U / 2) + (PIXEL_DELTA_V / 2);
+
+    // calculate the basis vectors for the defocus disk
+    auto defocusRadius =
+        focusDistance * tan(degreesToRadians(defocusAngle / 2));
+    defocusDiskU = u * defocusRadius;
+    defocusDiskV = v * defocusRadius;
   }
 
   Ray getRay(int m, int n) const {
-    // make a ray from origin to a random sample in the region of pixel (i,j)
+    // make a ray from defocus disk to a random sample in the region of pixel
+    // (i,j)
     auto offset = sampleSquare();
     auto pixelSample = PIXEL00_LOC + (n + offset.x()) * PIXEL_DELTA_U +
                        (m + offset.y()) * PIXEL_DELTA_V;
 
-    auto rayOrigin = CAMERA_CENTRE;
+    auto rayOrigin = (defocusAngle <= 0) ? CAMERA_CENTRE : defocusDiskSample();
     auto rayDirection = pixelSample - rayOrigin;
 
     return Ray(rayOrigin, rayDirection);
@@ -115,6 +130,11 @@ private:
     // returns a vector to a random point in the unit square with the centre at
     // the origin
     return Vec3(randomDouble() - 0.5, randomDouble() - 0.5, 0);
+  }
+
+  Point3 defocusDiskSample() const {
+    auto p = randomInUnitDisk();
+    return CAMERA_CENTRE + (p[0] * defocusDiskU) + (p[1] * defocusDiskV);
   }
 
   Colour rayColour(const Ray &r, int depth, const Hittable &world) const {

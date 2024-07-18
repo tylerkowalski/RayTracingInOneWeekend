@@ -56,5 +56,8 @@ int main() {
   cam.lookat = Point3(0, 0, -1);
   cam.vup = Vec3(0, 1, 0);
 
+  cam.defocusAngle = 5;
+  cam.focusDistance = 4;
+
   cam.render(world);
 }
