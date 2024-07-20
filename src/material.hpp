@@ -101,7 +101,9 @@ public:
         ri * sinTheta > 1.0; // if there is no solution to Snell's law
     Vec3 direction;
 
-    if (cannotRefract || reflectance(cosTheta, ri) > randomDouble())
+    if (cannotRefract ||
+        reflectance(cosTheta, ri) >
+            randomDouble()) // ability to reflect also depends on angle
       direction = reflect(unitDirection, rec.normal);
     else
       direction = refract(unitDirection, rec.normal, ri);
